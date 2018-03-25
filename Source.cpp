@@ -1,11 +1,10 @@
 #include <iostream>
-//#include "Test.h
+#include "Test.h"
 
 using namespace std;
 
-/*
 template <class T>
-class queue
+class arr_queue
 {
   static const int MEMORY_START_SIZE = 100;
   
@@ -15,14 +14,14 @@ class queue
     size_t array_length; // “екущий максимальный размер массива
     
   public:
-    queue() 
+    arr_queue() 
     {
       data = NULL;
       last_ind = 0;
       array_length = 0;
     }
 
-    ~queue() 
+    ~arr_queue() 
     {
       if (data != NULL) delete[] data;
     }
@@ -69,27 +68,18 @@ class queue
     bool empty() 
     {}
 };
-*/
-
-/*
-template <class T>
-void f(T t)
-{
-  cout << sizeof(t) << endl;
-}
-*/
 
 int main()
 {
-    /*
+  // Uncomment this if you want testing
+  /*
   stl_queue<int> stl_q;
   Test_int_queue test;
   test.add_queue_to_test(stl_q,"STL");
   test.run_all_tests();
-
-*/
+  */
 
  // f<int>(3);
 //  f<string>("Hell");
-  system("pause");
+  //system("pause");
 }
