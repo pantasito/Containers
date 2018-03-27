@@ -1,10 +1,11 @@
 #include <iostream>
 #include "Test.h"
 
+
 using namespace std;
 
 template <class T>
-class arr_queue
+class arr_queue : public a_queue<T>
 {
   static const int MEMORY_START_SIZE = 100;
   
@@ -72,12 +73,12 @@ class arr_queue
 int main()
 {
   // Uncomment this if you want testing
-  /*
   stl_queue<int> stl_q;
+  arr_queue<int> arr_q;
   Test_int_queue test;
   test.add_queue_to_test(stl_q,"STL");
+  test.add_queue_to_test(arr_q,"ARR");
   test.run_all_tests();
-  */
 
  // f<int>(3);
 //  f<string>("Hell");
