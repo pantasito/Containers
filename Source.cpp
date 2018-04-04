@@ -9,10 +9,10 @@ class arr_queue : public a_queue<T>
 {
   static const int MEMORY_START_SIZE = 100;
   
-    T* data; // Указатель на массив данных (где храним элементы)
-    size_t last_ind; // Индекс в массиве, указывающий на пооследний элемент
+    T* data; // Pointer to data array (where elements are stored)
+    size_t last_ind; // The index in the array that points to the last element
 
-    size_t array_length; // Текущий максимальный размер массива
+    size_t array_length; // Current maximum array size
     
   public:
     arr_queue() 
@@ -27,10 +27,10 @@ class arr_queue : public a_queue<T>
       if (data != NULL) delete[] data;
     }
 
-    // Добавить элемент в конце очереди
+	// Add item at end of queue
     void push(T t) 
     {
-      // Добавление элемента в пустую очередь
+	  // Adding an item to an empty queue
       if (data == NULL) {
         data = new T[MEMORY_START_SIZE];
         last_ind = 0;
@@ -50,24 +50,50 @@ class arr_queue : public a_queue<T>
       }    
     } 
     
-    // Возращает первый элемент в очереди (не извлекает его)
-    T front() {}
+	// Returns the first item in the queue (does not retrieve it)
+    T front() {
+		return data[0];
+		}
 
-    // Возращает последний элемент в очереди (не извлекает его)
-    T back() {} 
+	// Returns the last element in the queue (does not retrieve it)
+    T back() {
+		return data[last_ind];
+		} 
 
-    // Забрать первого в очереди
-    T pop() {} 
+	// Pick up first in line
+    T pop() {
+   	  if (array_length >= 2) {
+	    T result = data[0];
+	    data = & data[1];
+	    last_ind -= 1;
+	    array_length -= 1;
+	    return result;
+	  } else {
+	    if (array_length == 1){
+		  T result = data[0];
+	      clear();
+		  return result;
+	    }
+	  } 
+    }
     
-    // Очистить очередь
-    void clear() {} 
+	// Clear the queue
+    void clear() {
+		data = NULL;
+		last_ind = 0;
+        array_length = 0;
+		} 
 
-    // Размер контейнера
-    size_t size() {}
+	// Container size
+    size_t size() {
+		return last_ind + 1;
+		}
 
-    // Пустой ли контейнер
-    bool empty() 
-    {}
+	// If the container is empty
+    bool empty() {
+		if (data == NULL) return true;
+		else return false;
+		}
 };
 
 int main()
