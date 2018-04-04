@@ -210,7 +210,7 @@ class Test_int_queue
             if (q.empty() != false) {
               LOG(1,"Get pop() of queue");
               q.pop();
-              size--;
+              if (size > 0) size--;
             }
           }
 
