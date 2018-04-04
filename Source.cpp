@@ -62,20 +62,20 @@ class arr_queue : public a_queue<T>
 
 	// Pick up first in line
     T pop() {
-   	  if (array_length >= 2) {
+   	  if (last_ind == 0 & array_length != 0) {
 	    T result = data[0];
-	    data = & data[1];
-	    last_ind -= 1;
-	    array_length -= 1;
+	    data = NULL;
+	    array_length = 0;
 	    return result;
 	  } else {
-	    if (array_length == 1){
+		if (last_ind > 0) {
 		  T result = data[0];
-	      clear();
-		  return result;
-	    }
-	  } 
-    }
+	      data =& data[1];
+	      last_ind -= 1;
+	      return result;
+		}
+      }
+	}
     
 	// Clear the queue
     void clear() {
@@ -91,7 +91,7 @@ class arr_queue : public a_queue<T>
 
 	// If the container is empty
     bool empty() {
-		if (data == NULL) return true;
+		if (array_length == 0) return true;
 		else return false;
 		}
 };
