@@ -1,3 +1,4 @@
+#pragma once
 #include <queue>
 #include <ctime> 
 #include <map>
@@ -8,7 +9,8 @@
 
 using namespace std;
 
-#define THROW(mes) { stringstream ss; ss << mes; throw ss.str().c_str(); }
+#define THROW(mes)     { stringstream ss; ss << mes; throw ss.str().c_str(); }
+#define LOG(level,mes) { if ((log_level)>=(level)) cout << "  -= " <<  mes << endl; }
 
 template<class T>
 class a_queue
@@ -66,7 +68,12 @@ class Test_int_queue
   // All queues for testing
   vector<named_queue> all_queues;
 
+
   public:
+    // level of debug information. More level - more information
+    // key - test num, value - log_level for this test (default 0)
+    map<int,int> log_levels;
+    
     void add_queue_to_test(a_queue<int>& q, string name)
     {
       all_queues.push_back(named_queue(name, q));
@@ -104,21 +111,31 @@ class Test_int_queue
     // 1 add, 1 remove, 1 add, 1 remove
     double Test_1(a_queue<int>& q, int iterations = 10000)
     {
+        int log_level = 0;
+        if (log_levels.find(1) != log_levels.end())
+            log_level = log_levels[1];
+      LOG(1,"Clear queue");
       q.clear();
       unsigned int start_time = clock(); // начальное время
       try
       {
         for (int i = 0; i < iterations; i++) {
+          LOG(1,"Push " << i << " to queue");
           q.push(i);
 
+          LOG(1,"Get front() of queue");
           int res = q.front();
+          LOG(1,"Check correct of front: " << res);
           if (res != i) THROW("front() return " << res << " but expected " << i);
           
+          LOG(1,"Get pop() of queue");
           res = q.pop();
           if (res != i) THROW("pop() return " << res << " but expected " << i);
 
+          LOG(1,"Check empty of queue");
           if (q.empty() == false) THROW("empty return false, but expected true");
         }
+        LOG(1,"Check size of queue");
         if (q.size() != 0) THROW("size return " << q.size() << ". Expected 0");
       }
       catch (const char* ex)
@@ -135,18 +152,29 @@ class Test_int_queue
     // 2 add, 1 remove, 2 add, 1 remove, ...
     double Test_2(a_queue<int>& q, int iterations = 10000)
     {
+        int log_level = 0;
+        if (log_levels.find(1) != log_levels.end())
+            log_level = log_levels[2];
+        LOG(1,"Clear queue");
       q.clear();
       unsigned int start_time = clock(); // начальное время
       try
       {
         for (int i = 0; i < iterations; i++) {
+          LOG(1,"Push " << i << " to queue");
           q.push(i);
+          LOG(1,"Push " << i+1 << " to queue");
           q.push(i + 1);
+
+          LOG(1,"Get pop() of queue");
           int res = q.pop();
 
+          LOG(1,"Check correct of pop: " << res);
           if (res != (i+1) / 2)   THROW("pop() return " << res << " but expected " << i / 2);
+          LOG(1,"Check size of queue: ");
           if (q.size() != i + 1)  THROW("size return " << q.size() << ". Expected " << i + 1);
         }
+        LOG(1,"Check empty of queue");
         if (q.empty() != false) THROW("empty return true, but expected false");
       }
       catch (const char* ex)
@@ -163,6 +191,10 @@ class Test_int_queue
     // Random add - 70% chanse, random remove 30% chanse
     double Test_3(a_queue<int>& q, int iterations = 10000)
     {
+        int log_level = 0;
+        if (log_levels.find(1) != log_levels.end())
+            log_level = log_levels[3];
+      LOG(1,"Clear queue");
       q.clear();
       unsigned int start_time = clock(); // начальное время
       try
@@ -170,15 +202,19 @@ class Test_int_queue
         int size = 0;
         for (int i = 0; i < iterations; i++) {
           if (rand() % 100 < 70) {
-            q.push(rand() % 1000);
+            int el = rand() % 1000;
+            LOG(1,"Push " << el << " to queue");
+            q.push(el);
             size++;
           } else {
             if (q.empty() != false) {
+              LOG(1,"Get pop() of queue");
               q.pop();
-              size--;
+              if (size > 0) size--;
             }
           }
 
+          LOG(1,"Check size of queue");
           if (size != q.size()) THROW("size() return " << q.size() << " but expected " << size);
         }
       }

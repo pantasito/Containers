@@ -102,6 +102,9 @@ int main()
   stl_queue<int> stl_q;
   arr_queue<int> arr_q;
   Test_int_queue test;
+  test.log_levels[1] = 1;
+  test.log_levels[2] = 0;
+  test.log_levels[3] = 0;
   test.add_queue_to_test(stl_q,"STL");
   test.add_queue_to_test(arr_q,"ARR");
   test.run_all_tests();
