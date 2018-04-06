@@ -197,6 +197,8 @@ class Test_int_queue
       LOG(1,"Clear queue");
       q.clear();
       unsigned int start_time = clock(); // начальное время
+      int pushes = 0;
+      int pops = 0;
       try
       {
         int size = 0;
@@ -205,11 +207,13 @@ class Test_int_queue
             int el = rand() % 1000;
             LOG(1,"Push " << el << " to queue");
             q.push(el);
+            pushes++;
             size++;
           } else {
-            if (q.empty() != false) {
+            if (q.empty() != true) {
               LOG(1,"Get pop() of queue");
               q.pop();
+              pops++;
               if (size > 0) size--;
             }
           }
@@ -225,7 +229,7 @@ class Test_int_queue
       }
       unsigned int end_time = clock(); // конечное время
       unsigned int search_time = end_time - start_time; // искомое время
-      cout << "Test_3 completed. Time " << double(search_time) / 1000.0 << " sec " << endl;
+      cout << "Test_3 completed. Time " << double(search_time) / 1000.0 << " sec. Pushes: " << pushes << ". Pops: " << pops << endl;
       return double(search_time) / 1000.0;
     }    
 };
