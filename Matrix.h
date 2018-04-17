@@ -63,11 +63,11 @@ public:
 		}
 	}
 
-	void Set_matrix()
+	void Set_matrix(istream& is)
 	{
 		for (int i = 0; i < m; i++)
 			for (int j = 0; j < n; j++)
-				cin >> body[i * n + j];	
+				is >> body[i * n + j];	
 	}
 
 	Matrix add(const Matrix rhs){
@@ -80,15 +80,13 @@ public:
 		return res;	
 	}
 
-	Matrix operator + (const Matrix rhs) {
+	Matrix operator + (const Matrix& rhs) {
 		if (m == rhs.m && n == rhs.n) {
-			Matrix res(*this);
-			res.add(rhs);
-			return res;
-		}
+			return this->add(rhs);
+		}		
 	}
 
-	void operator += (const Matrix rhs) {
+	void operator += (const Matrix& rhs) {
 		if (m == rhs.m && n == rhs.n) {
 			for (int i = 0; i < m * n; ++i) {
 				body[i] += rhs.body[i];
@@ -96,7 +94,7 @@ public:
 		}
 	}
 
-	Matrix sub(const Matrix rhs) {
+	Matrix sub(const Matrix& rhs) {
 		Matrix res(*this);
 		if (m == rhs.m && n == rhs.n) {
 			for (int i = 0; i < m * n; ++i) {
@@ -106,15 +104,13 @@ public:
 		return res;
 	}
 
-	Matrix operator - (const Matrix rhs) {
-		Matrix res(*this);
+	Matrix operator - (const Matrix& rhs) {	
 		if (m == rhs.m && n == rhs.n) {
-			res.sub(rhs);
+			return sub(rhs);
 		}
-		return res;
 	}
 
-	void operator -= (const Matrix rhs) {
+	void operator -= (const Matrix& rhs) {
 		if (m == rhs.m && n == rhs.n) {
 			for (int i = 0; i < m * n; ++i) {
 				body[i] -= rhs.body[i];
@@ -122,7 +118,7 @@ public:
 		}
 	}
 
-	Matrix mul(const int& rhs) {
+	Matrix mul(const int rhs) {
 		Matrix c(*this);
 		for (int i = 0; i < m * n; ++i) {
 			c.body[i] *= rhs;	
@@ -130,12 +126,11 @@ public:
 		return c;
 	}
 	
-	Matrix operator * (const int& rhs) {
-		Matrix c(*this);
-		return c.mul(rhs);
+	Matrix operator * (const int rhs) {		
+		return mul(rhs);
 	}
 
-	void operator *= (const int& rhs) {
+	void operator *= (const int rhs) {
 			for (int i = 0; i < m * n; ++i) {
 				body[i] *= rhs;
 			}
@@ -148,6 +143,7 @@ public:
 			for (int i = 0; i < res.m; ++i) {
 				for (int j = 0; j < res.n; ++j) {
 					for (int k = 0; k < n; ++k) {
+						//res.set(i,j) = get(i,k)*rhs.get(k,j);
 						res.body[res.n * i + j] += body[n * i + k] * rhs.body[k * rhs.n + j];
 					}
 				}
@@ -199,13 +195,19 @@ public:
 
 	Matrix transpose_the_matrix() {		
 		Matrix res(*this);
-
+		
 		int j = 0;
 		for (int i = 0; i < m * n; ++i) {
 			res.body[i] = body[j];
 			j += n;
 			if (j >= m * n) j = j % (m * n) + 1;
 		}
+		
+		/*
+		for (int i = 0; i < m; i++)		
+			for (int j = 0; j < n; j++)
+						res.set(j,i, get(i,j));		
+		*/
 		int tmp;
 		tmp = res.m;
 		res.m = res.n;
@@ -213,22 +215,24 @@ public:
 		return res;
 	}
 	
-	void print() {
+	void print(ostream& os) {
 		for (int i = 0; i < m; ++i) {
 			for (int j = 0; j < n; ++j) {
-				cout << setw(3) << body[n * i + j] << " ";
+				os << setw(3) << body[n * i + j] << " ";
 			}
-			cout << endl;
+			os << endl;
 		}
-		cout << endl;
+		os << endl;
 	}
 
-	double get(int i, int j) {
-		if (i <= m && j <= n) return body[(i-1) * n + (j-1)];
+	inline double get(int i, int j) {
+		assert(i <= m && j <= n);
+		return body[i * n +j];
 	}
 
-	void set(int i, int j, double value) {
-		if (i <= m && j <= n) body[(i - 1) * n + (j - 1)] = value;
+	inline void set(int i, int j, double value) {
+		assert(i <= m && j <= n);
+		if (i <= m && j <= n) body[i  * n +j ] = value;
 	}
 
 	/*
@@ -273,42 +277,51 @@ public:
 	/*
 	Matrix get_the_inverse_matrix(const Matrix& A) {}
 	*/
-};
 
+	Matrix submatrix(int _i, int _j)
+	{
+		Matrix matr(m-1,n-1);
+		int k = 0;
+		for (int i = 0; i < m; i++)
+			for (int j = 0; j < n; j++)
+			{
+				if (i != _i && j != _j)
+				{
+					matr.body[k] = get(i,j);
+					k++;
+				}
+			}
+		return matr;
+	}
+
+	double get_the_determinant()
+	{
+		if (n == 1 && m == 1) return body[0];
+	
+		double det = 0;
+		for (int j = 0; j < n; j++)
+		{
+			Matrix tmp = submatrix(0,j);
+
+			int sign = (j % 2 == 1 ? -1: 1);		
+	
+			det += sign * tmp.get_the_determinant() * get(0,j);
+		}
+		return det;
+	}
+
+};
 
 ostream& operator <<(ostream& ostr, Matrix& m)
 {
-	m.print();
-	return (ostr);
+	m.print(ostr);
+	return ostr;
 }
 
 istream& operator >>(istream& in, Matrix& m)
 {
-	m.Set_matrix();
+	m.Set_matrix(in);
 	return (in);
 }
 
-int main() {
-	Matrix a(3,3,1,4);
-	//a.print();
-	Matrix b(3,3,0,10);
-	//b.print();
-	Matrix c("a.txt");
-	//c.print();
-	Matrix d = a.add(b);
-	//d.print();
-	Matrix e = a.mul(2);
-	//e.print();
-	Matrix f(3, 3);
-	//f.print();
-	//a.print();
-	//a.set(3, 3, 10);
-	//a.print();
-	//float g = a.get_the_determinant();
-	//cout << g;
-	cout << a << b;
-	a *= b;
-	cout << a;
 
-	system("pause");
-}
