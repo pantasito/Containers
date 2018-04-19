@@ -6,19 +6,6 @@
 
 using namespace std;
 
-/*
-убрать дублирующийся код или его не так много?
-написть проверку на ошибки
-перегрузить оператор [][];
-написать детерминант
-написать обратную матрицу
-написать быстрое умножение матриц
-написать операцию - добавить столбец?
-поменять местами два столбца
-поменять местами две строки
-написать класс линейные уравнения
-*/
-
 class Matrix{
 	int m;			// row
 	int n;			// column
@@ -42,6 +29,7 @@ public:
 		for (int i = 0; i < m * n; ++i) {
 			body[i] = rand() % (max + 1 - min) + min;
 		}
+
 	}
 	
 	Matrix(const char* file_name) {
@@ -82,7 +70,7 @@ public:
 
 	Matrix operator + (const Matrix& rhs) {
 		if (m == rhs.m && n == rhs.n) {
-			return this->add(rhs);
+			return add(rhs);
 		}		
 	}
 
@@ -142,8 +130,9 @@ public:
 		if (n == rhs.m) {
 			for (int i = 0; i < res.m; ++i) {
 				for (int j = 0; j < res.n; ++j) {
+					double s = 0;
 					for (int k = 0; k < n; ++k) {
-						//res.set(i,j) = get(i,k)*rhs.get(k,j);
+						//res.set(i,j) = get(i,k) * rhs.get(k,j);
 						res.body[res.n * i + j] += body[n * i + k] * rhs.body[k * rhs.n + j];
 					}
 				}
@@ -153,11 +142,9 @@ public:
 	}
 
 	Matrix operator * (const Matrix& rhs) {
-		Matrix res(m, rhs.n);
 		if (n == rhs.m) {
-			res = mul(rhs);
+			return mul(rhs);
 		}
-		return res;
 	}
 	
 	void operator *= (const Matrix& rhs) {
@@ -235,58 +222,25 @@ public:
 		if (i <= m && j <= n) body[i  * n +j ] = value;
 	}
 
-	/*
-	Matrix minor() {
-		Matrix B(m - 1, n - 1);
-		cout << B.m << " " << B.n << endl;
-		for (int i = 0; i < B.m; ++i) {
-			for (int j = 0; j < B.n; ++j) {
-				B.body[i * B.n + j] = body[(i + 1) * n + (j + 1)];
-				cout << "New elem No = " << i * B.n + j << " Old elem No " << (i + 1) * n + (j + 1) << endl;
+	Matrix get_the_inverse_matrix() {
+		Matrix res(m, n);
+		double res_det = 1 / get_the_determinant();
+		for (int i = 0; i < m; ++i) {
+			for (int j = 0; j < n; ++j) {
+				//det от submatrix;
+				int sign = ((i + j) % 2 == 1 ? -1 : 1);
+				res.body[i * n + j] = res_det * (sign * submatrix(i, j).get_the_determinant());
 			}
 		}
-		return B;
+		return res.transpose_the_matrix();
 	}
-	*/
 
-/*
-	double get_the_determinant() {
-		Matrix A(*this);
-		if (A.m == A.n) {
-			double res = 0;
-			for (int i = 0; i < m; ++i) {
-				if (m == 1) return body[0];
-				else {
-					Matrix B(m - 1, n - 1);
-					for (int j = 0; j < B.m; ++j) {
-						for (int k = 0; k < B.n; ++k) {
-							B.body[B.n * j + k] = A.body[(A.n + 1) * j + (k + 1)];
-						}
-					}
-
-					
-					res += body[i] * get_the_determinant();
-				}
-			}
-			return res;
-		}
-		cout << "cant help" << endl;
-		return -1.0;
-	}
-	*/
-	/*
-	Matrix get_the_inverse_matrix(const Matrix& A) {}
-	*/
-
-	Matrix submatrix(int _i, int _j)
-	{
+	Matrix submatrix(int _i, int _j) {
 		Matrix matr(m-1,n-1);
 		int k = 0;
 		for (int i = 0; i < m; i++)
-			for (int j = 0; j < n; j++)
-			{
-				if (i != _i && j != _j)
-				{
+			for (int j = 0; j < n; j++) {
+				if (i != _i && j != _j) {
 					matr.body[k] = get(i,j);
 					k++;
 				}
@@ -294,22 +248,16 @@ public:
 		return matr;
 	}
 
-	double get_the_determinant()
-	{
+	double get_the_determinant() {
 		if (n == 1 && m == 1) return body[0];
-	
 		double det = 0;
-		for (int j = 0; j < n; j++)
-		{
+		for (int j = 0; j < n; j++) {
 			Matrix tmp = submatrix(0,j);
-
 			int sign = (j % 2 == 1 ? -1: 1);		
-	
 			det += sign * tmp.get_the_determinant() * get(0,j);
 		}
 		return det;
 	}
-
 };
 
 ostream& operator <<(ostream& ostr, Matrix& m)
@@ -324,4 +272,33 @@ istream& operator >>(istream& in, Matrix& m)
 	return (in);
 }
 
+/*
+Наставления по быстрому умножению матриц:
+1) Напиши функцию, которая из матрицы возвращает 4 матрицы (каким образом она будет это делать решать тебе)
+2) Обязательно! Оталадь ее, в данном случае обычного принта сначала исходной матрицы, а потом 4 блоков будет достаточно.
+Т.е. принтуешь, глазками смотришь и проверяешь что блоки правильные.
+Если совпало, можно считать что более менее отладил.
+На данный момент не парься над тем что будет если вызвать эту функцию для матрицы нечетного размера.
+3) После этого  сделай функцию (метод), который из 4х сделает одну матрицу (можешь даже такой конструктор сделать).
+4) Обязательно отладь его!!
+5) Делаешь метод быстрого умножения. https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D0%A8%D1%82%D1%80%D0%B0%D1%81%D1%81%D0%B5%D0%BD%D0%B0
+в формулахъ где надо 7 P вычислять, используешь свое старое умножение mul (или оператор*)
+6) Как реализовал уможиения такое, обязательно! отдаль его. Опять же обычного принта достаочно.
+7) После этого подумай как сделать рекурсивно все это.
 
+После 2,4,6 пункта все изменения вливай. Т.е. я хочу видеть до 6 пункта 3 коммита.
+
+Алгоритм Штрассена — Википедия
+Алгоритм Штрассена предназначен для быстрого умножения матриц.
+Он был разработан Фолькером Штрассеном в 1969 году и является обобщением метода умножения Карацубы н...
+ru.wikipedia.org
+
+убрать дублирующийся код или его не так много?
+написть проверку на ошибки
+перегрузить оператор [][];
+написать быстрое умножение матриц
+написать операцию - добавить столбец?
+поменять местами два столбца
+поменять местами две строки
+написать класс линейные уравнения
+*/

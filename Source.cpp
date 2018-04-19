@@ -1,6 +1,6 @@
 #include <iostream>
 #include <assert.h>
-#include "arr_queue.h"
+//#include "arr_queue.h"
 //#include "Test.h"
 #include "Matrix.h"
 
@@ -64,10 +64,22 @@ int main()
   cout << double(clock())/CLOCKS_PER_SEC << endl;
   */
 
- test_matrix();
+// test_matrix();
+
+	
 
 
  // f<int>(3);
 //  f<string>("Hell");
-  //system("pause");
+	Matrix a(3, 3, 0, 10);
+	Matrix b = a.get_the_inverse_matrix();
+
+	cout << a << a.get_the_determinant() << endl << b << b.get_the_determinant() << endl;
+	
+	Matrix c = a * b;
+	cout << c;
+
+
+
+  system("pause");
 }
