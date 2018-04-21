@@ -51,6 +51,29 @@ public:
 		}
 	}
 
+	int get_matrix_row_num() {
+		return m;
+	}
+
+	void set_matrix_row_num(int _m) {
+		m = _m;
+	}
+
+	int get_matrix_column_num() {
+		return n;
+	}
+
+	void set_matrix_column_num(int _n) {
+		n = _n;
+	}
+
+	void set_matrix_size(int _m, int _n) {
+		delete body;
+		m = _m;
+		n = _n;
+		body = new double[m * n];
+	}
+
 	void Set_matrix(istream& is)
 	{
 		for (int i = 0; i < m; i++)
@@ -130,7 +153,6 @@ public:
 		if (n == rhs.m) {
 			for (int i = 0; i < res.m; ++i) {
 				for (int j = 0; j < res.n; ++j) {
-					double s = 0;
 					for (int k = 0; k < n; ++k) {
 						//res.set(i,j) = get(i,k) * rhs.get(k,j);
 						res.body[res.n * i + j] += body[n * i + k] * rhs.body[k * rhs.n + j];
@@ -203,13 +225,15 @@ public:
 	}
 	
 	void print(ostream& os) {
+		const double zero = 2e-14;
 		for (int i = 0; i < m; ++i) {
 			for (int j = 0; j < n; ++j) {
-				os << setw(3) << body[n * i + j] << " ";
+				os << setw(3);
+				if (fabs(body[n * i + j]) < zero) os << 0 << " ";
+				else os << body[n * i + j] << " ";
 			}
 			os << endl;
 		}
-		os << endl;
 	}
 
 	inline double get(int i, int j) {
@@ -224,15 +248,15 @@ public:
 
 	Matrix get_the_inverse_matrix() {
 		Matrix res(m, n);
-		double res_det = 1 / get_the_determinant();
+		double res_det = 1.0 / get_the_determinant();
 		for (int i = 0; i < m; ++i) {
 			for (int j = 0; j < n; ++j) {
 				//det от submatrix;
 				int sign = ((i + j) % 2 == 1 ? -1 : 1);
-				res.body[i * n + j] = res_det * (sign * submatrix(i, j).get_the_determinant());
+				res.set(j, i, res_det * (sign * submatrix(i, j).get_the_determinant()));
 			}
 		}
-		return res.transpose_the_matrix();
+		return res;
 	}
 
 	Matrix submatrix(int _i, int _j) {
@@ -270,6 +294,28 @@ istream& operator >>(istream& in, Matrix& m)
 {
 	m.Set_matrix(in);
 	return (in);
+}
+
+void initialize_the_matrix(Matrix& a, Matrix& e, int row_start_pos, int column_start_pos) {
+	for (int i = 0; i < a.get_matrix_row_num(); ++i) {
+		for (int j = 0; j < a.get_matrix_column_num(); ++j) {
+			a.set(i, j, e.get(row_start_pos + i, column_start_pos + j));
+		}
+	}
+}
+
+void divided_into_4_parts_Matrix(Matrix& a, Matrix& b, Matrix& c, Matrix& d, Matrix& e) {
+	int m = e.get_matrix_row_num() / 2;
+	int n = e.get_matrix_column_num() / 2;
+	a.set_matrix_size(m, n);
+	b.set_matrix_size(m, n);
+	c.set_matrix_size(m, n);
+	d.set_matrix_size(m, n);
+	
+	initialize_the_matrix(a, e, 0, 0);
+	initialize_the_matrix(b, e, 0, n);
+	initialize_the_matrix(c, e, m, 0);
+	initialize_the_matrix(d, e, m, n);
 }
 
 /*
