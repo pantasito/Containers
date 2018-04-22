@@ -41,7 +41,6 @@ public:
 		for (int i = 0; i < m * n; ++i) {
 			body[i] = rand() % (max + 1 - min) + min;
 		}
-
 	}
 	
 	Matrix(const char* file_name) {
@@ -61,12 +60,6 @@ public:
 		for (int i = 0; i < m * n; ++i) {
 			body[i] = a.body[i];
 		}
-	}
-
-	Matrix(const Matrix& a, const Matrix& b, const Matrix& c, const Matrix& d) {
-		m = a.m * 2;
-		n = a.n * 2;
-		body = new double[m * n];
 	}
 
 	~Matrix() {
@@ -149,10 +142,10 @@ public:
 	}
 
 	void operator *= (const int rhs) {
-			for (int i = 0; i < m * n; ++i) {
-				body[i] *= rhs;
-			}
+		for (int i = 0; i < m * n; ++i) {
+			body[i] *= rhs;
 		}
+	}
 
 
 	Matrix mul(const Matrix& rhs) const {
@@ -302,7 +295,7 @@ public:
 	}
 
 	//methods for fast multiplication
-	void divided_into_4_parts(Matrix& a, Matrix& b, Matrix& c, Matrix& d) {
+	void divided_into_4_parts(Matrix& a, Matrix& b, Matrix& c, Matrix& d) const{
 		int new_m = m / 2;
 		int new_n = n / 2;
 		a.set_size(new_m, new_n);
@@ -310,13 +303,24 @@ public:
 		c.set_size(new_m, new_n);
 		d.set_size(new_m, new_n);
 
-		initialize(a, 0, 0);
-		initialize(b, 0, new_n);
-		initialize(c, new_m, 0);
-		initialize(d, new_m, new_n);
+		initialize_block(a, 0, 0);
+		initialize_block(b, 0, new_n);
+		initialize_block(c, new_m, 0);
+		initialize_block(d, new_m, new_n);
 	}
 
-	void initialize(Matrix& a, int row_start_pos, int column_start_pos) {
+	Matrix(const Matrix& a, const Matrix& b, const Matrix& c, const Matrix& d) {
+		m = a.get_row_num() * 2;
+		n = a.get_column_num() * 2;
+		body = new double[m * n];
+
+		initialize_from_blocks(a, 0, 0);
+		initialize_from_blocks(b, 0, n/2);
+		initialize_from_blocks(c, m/2, 0);
+		initialize_from_blocks(d, m/2, n/2);
+	}
+
+	void initialize_block(Matrix& a, int row_start_pos, int column_start_pos) const{
 		for (int i = 0; i < a.get_row_num(); ++i) {
 			for (int j = 0; j < a.get_column_num(); ++j) {
 				a.set(i, j, get(row_start_pos + i, column_start_pos + j));
@@ -324,6 +328,42 @@ public:
 		}
 	}
 
+	void initialize_from_blocks(const Matrix& a, int row_start_pos, int column_start_pos) {
+		for (int i = 0; i < a.get_row_num(); ++i) {
+			for (int j = 0; j < a.get_column_num(); ++j) {
+				set(i + row_start_pos, j + column_start_pos, a.get(i, j));
+			}
+		}
+	}
+
+	Matrix fast_mul(const Matrix& rhs) {
+		
+		Matrix a11(1, 1, 1, 1);
+		Matrix a12(a11), a21(a11), a22(a11);
+		divided_into_4_parts(a11, a12, a21, a22);
+
+		Matrix b11(a11), b12(a11), b21(a11), b22(a11);
+		rhs.divided_into_4_parts(b11, b12, b21, b22);
+
+		Matrix p1(a11), p2(a11), p3(a11), p4(a11), p5(a11), p6(a11), p7(a11);
+
+		p1 = (a11 + a22) * (b11 + b22);
+		p2 = (a21 + a22) * b11;
+		p3 = a11 * (b12 - b22);
+		p4 = a22 * (b21 - b11);
+		p5 = (a11 + a12) * b22;
+		p6 = (a21 - a11) * (b11 + b12);
+		p7 = (a12 - a22) * (b21 + b22);
+
+		Matrix c11(a11), c12(a11), c21(a11), c22(a11);
+		c11 = p1 + p4 - p5 + p7;
+		c12 = p3 + p5;
+		c21 = p2 + p4;
+		c22 = p1 - p2 + p3 + p6;
+		Matrix res(c11, c12, c21, c22);
+		return res;
+	}
+			
 };
 
 ostream& operator <<(ostream& ostr, Matrix& m)
@@ -342,8 +382,6 @@ istream& operator >>(istream& in, Matrix& m)
 
 /*
 Наставления по быстрому умножению матриц:
-3) После этого  сделай функцию (метод), который из 4х сделает одну матрицу (можешь даже такой конструктор сделать).
-4) Обязательно отладь его!!
 5) Делаешь метод быстрого умножения. https://ru.wikipedia.org/wiki/%D0%90%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC_%D0%A8%D1%82%D1%80%D0%B0%D1%81%D1%81%D0%B5%D0%BD%D0%B0
 в формулахъ где надо 7 P вычислять, используешь свое старое умножение mul (или оператор*)
 6) Как реализовал уможиения такое, обязательно! отдаль его. Опять же обычного принта достаочно.

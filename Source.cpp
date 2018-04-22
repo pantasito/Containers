@@ -41,6 +41,24 @@ using namespace std;
 		cout << "Block Left Top" << endl << a << endl << "Block Right Top" << endl << b << endl;
 		cout << "Block Left Lower" << endl << c << endl << "Block Right Lower" << endl << d << endl;
 	
+		Matrix m5(a, b, c, d);
+		cout << "Matrix P constructed from blocks:" << endl;
+		cout <<	m5;
+
+		Matrix m6 = m4 * m4;
+		cout << "Matrix M * Matrix M:" << endl;
+		cout << m6 << endl;
+
+		cout << "Matrix M.fast_mul(Matrix M):" << endl;
+		Matrix m7 = m4.fast_mul(m4);
+		cout << m7 << endl;
+
+		cout << "Matrix M * Matrix M == Matrix M.fast_mul(Matrix M) : ";
+		if (m6 == m7) cout << "true";
+		else cout << "false";
+		cout << endl;
+
+
 	}
 	
 
