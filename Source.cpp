@@ -6,28 +6,15 @@ using namespace std;
 
 	void test_matrix()
 	{
-		cout << "Start test matrix" << endl;
-		Matrix a(3, 3, 1, 4);
-		//a.print();
+		cout << "Start test Matrix class" << endl;
+		Matrix a(1, 1, 1, 4);
+		cout << "Matrix a:" << endl << a << endl;
 		Matrix b(3, 3, 0, 10);
-		//b.print();
-		//Matrix c("a.txt");
-		//c.print();
-		Matrix d = a.add(b);
-		//d.print();
-		Matrix e = a.mul(2);
-		//e.print();
-		Matrix f(3, 3);
-		//f.print();
-		//a.print();
-		//a.set(3, 3, 10);
-		//a.print();
-		//float g = a.get_the_determinant();
-		//cout << g;
-		cout << a << endl << b << endl;
-		a *= b;
-		cout << a << endl;
-
+		cout << "Matrix b:" << endl << b << endl;
+		Matrix c(1, 3, 0, 10);
+		cout << "Matrix c:" << endl << c << endl;
+		Matrix d(3, 1, 0, 10);
+		cout << "Matrix d:" << endl << d << endl;
 
 		Matrix m1(4, 4, 0, 9);
 		Matrix sub_m1_1 = m1.submatrix(2, 2);
@@ -37,27 +24,30 @@ using namespace std;
 		cout << "Submatrix m1 (2,2):" << endl << sub_m1_1 << endl;
 		cout << "Submatrix m1 (3,0):" << endl << sub_m1_2 << endl;
 
-
 		Matrix m2(3, 3, 0, 9);
-		cout << "Determinant of matrix: " << endl << m2 << " is : " << m2.get_the_determinant() << endl << endl;
+		cout << "Determinant of matrix: " << endl << m2 << " is : " << m2.det() << endl << endl;
 
-		Matrix i(4, 4, 0, 10);
-		Matrix j = i.get_the_inverse_matrix();
-		Matrix k = i * j;
+		Matrix m3(4, 4, 0, 10);
+		Matrix m3_inv = m3.get_inverse();
+		Matrix e = m3 * m3_inv;
 
-		cout << "Matrix A: " << endl << i << endl << "Inverse matrix of A: " << endl << j << endl << "A*A^(-1): "<< endl << k << endl;
-		
-		Matrix c(b);
-		Matrix m(8, 8, 0, 10);
-		divided_into_4_parts_Matrix(a, b, c, d, m);
-		cout << "Matrix M: " << endl << i << endl << "Matrix M:" << endl << m << endl << "Blocks of matrix M: " << endl
-			 << "Matrix A:"<< endl << a << endl << "Matrix B:" << endl << b << endl 
-			 << "Matrix C:"<< endl << c << endl << "Matrix D:" << endl << d << endl;
+		cout << "Matrix A: " << endl << m3 << endl;
+		cout << "Inverse matrix of A: " << endl << m3_inv << endl;
+		cout << "A*A^(-1): " << endl << e << endl;
+
+		Matrix m4(8, 8, 0, 10);
+		m4.divided_into_4_parts(a, b, c, d);
+		cout << "Matrix M:" << endl << m4 << endl;
+		cout << "Block Left Top" << endl << a << endl << "Block Right Top" << endl << b << endl;
+		cout << "Block Left Lower" << endl << c << endl << "Block Right Lower" << endl << d << endl;
+	
 	}
+	
 
 	int main() {
 	
 	test_matrix();
-	
+
 	system("pause");
 }
+	//нужно ли метод print вынести в приватные методы?
