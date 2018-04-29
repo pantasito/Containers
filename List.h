@@ -1,6 +1,6 @@
 ﻿#include <iostream>
 #include <assert.h>
-//using namespace std;
+using namespace std;
 
 class List {
 
@@ -149,14 +149,17 @@ public:
     std::cout << std::endl;
   }
 
-  class iterator;
+  class iterotor;
 
   // Вставляет в список элемент после элемента it
-  void insert(iterator& it, int t) {
-	  if (first == it.elem && first == NULL) {
+  void insert(iterotor& it, int t) {
+	  if (it.elem == NULL) {
+		  assert(first == NULL);
 		  push_start(t);
-	  } 
-	  if (first == it.elem && first != NULL) {
+		  return;
+	  }
+
+	  if (it.elem != NULL && it.elem->next == NULL) {
 		  push_end(t);
 	  } else {
 		  list_elem* elem = new list_elem;
@@ -164,15 +167,16 @@ public:
 		  elem->next = it.elem->next;
 		  it.elem->next = elem;
 		  elem->prev = it.elem;
+		  elem->value = t;
 		  len++;
 	  }
   }
 
  //  Принимает на вход число и возвращает итератор на первый встретившийся элемент в списке,
  //  который равен этому числу. Возвращает end - если такого нету
-  iterator find(int a) {
-	  iterator it(first);
-	  while (it.elem != NULL || it.elem->value != a)
+  iterotor find(int a) {
+	  iterotor it(first);
+	  while (it.elem != NULL && it.elem->value != a)
 	  {
 		  it.elem = it.elem->next;
 	  }
@@ -180,7 +184,7 @@ public:
   }
 
 //  2) Принимает на вход 2 итератора и меняет местами элементы, на которые указывают итераторы
-  void swap(iterator& lhs, iterator& rhs) {
+  void swap(iterotor& lhs, iterotor& rhs) {
 	  if (lhs.elem != NULL && rhs.elem != NULL) {
 		  int tmp = lhs.elem->value;
 		  lhs.elem->value = rhs.elem->value;
@@ -189,17 +193,20 @@ public:
 }
 
   // Удаляет из списка элемент it
-  void erase(iterator& it) {			//удаляет элемент который за итератором и переставляет итератор на следующий
-	  if (first == last && first == NULL) return;
+  void erase(iterotor& it) {			//удаляет элемент который за итератором и переставляет итератор на следующий
+	  if (it.elem == NULL) return;
 	  if (it.elem == first) {
-		  pop_start();
+		  assert(first != NULL);
 		  it.elem = it.elem->next;
+		  pop_start();
+		  return;
 	  }
 	  if (it.elem == last) {
-		  pop_end(); 
-		  it.elem = it.elem->prev;      //по условию должен был перевести итератор в NULL, не стал
-	  }
-	  else {
+		  assert(last != NULL);
+		  it.elem = it.elem->prev;      //по условию должен был перевести итератор в NULL, но перевел на последний в списке
+		  pop_end();
+		  return;
+	  } else {
 		  (it.elem->prev)->next = it.elem->next;
 		  (it.elem->next)->prev = it.elem->prev;
 		  delete it.elem;
@@ -208,25 +215,26 @@ public:
 	  }
   }
   
-  iterator begin() {
-    iterator it(first);
+  iterotor begin() {
+    iterotor it(first);
     return it;
-    //return iterator(first);
+    //return iterotor(first);
   }
     
-  iterator end() {
-    return iterator(NULL);
+  iterotor end() {
+	  iterotor it(last->next);
+	  return it;
   }
   
   
-  class iterator {
+  class iterotor {
     friend List; // Мы говорим, что отныне класс List - наш друг. Это значит что у этого класса есть доступ
-                 // к приватным полям класса iterator;
+                 // к приватным полям класса iterotor;
 
     List::list_elem* elem;    
     // Если elem == NULL - то это итератор end
 
-    iterator(list_elem* p):elem(p) {}
+    iterotor(list_elem* p):elem(p) {}
 
   public:
     void operator ++() {
@@ -241,12 +249,12 @@ public:
       if (elem != NULL) return elem->value;
     }
 
-    bool operator == (iterator& rhs) const { 
+    bool operator == (iterotor& rhs) const { 
       if (elem == rhs.elem) return true;
       else false;
     }
 
-    bool operator != (iterator& rhs) const {
+    bool operator != (iterotor& rhs) const {
       if (elem == rhs.elem) return false;
       else true;
     }
