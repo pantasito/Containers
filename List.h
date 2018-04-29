@@ -153,15 +153,19 @@ public:
 
   // Вставляет в список элемент после элемента it
   void insert(iterotor& it, int t) {
-	  if (it.elem == NULL) {
-		  assert(first == NULL);
+	  if (first == NULL) {					//пустой список, добавили элемент
+		  assert(last == NULL);
 		  push_start(t);
 		  return;
 	  }
 
 	  if (it.elem != NULL && it.elem->next == NULL) {
 		  push_end(t);
-	  } else {
+		  return;
+	  }
+
+	  if (it.elem == NULL && first != NULL) return;
+	  else {
 		  list_elem* elem = new list_elem;
 		  (it.elem->next)->prev = elem;
 		  elem->next = it.elem->next;
@@ -209,9 +213,10 @@ public:
 	  } else {
 		  (it.elem->prev)->next = it.elem->next;
 		  (it.elem->next)->prev = it.elem->prev;
+		  list_elem* old = it.elem->next;
 		  delete it.elem;
 		  len--;
-		  it.elem = it.elem->next;
+		  it.elem = old;
 	  }
   }
   
@@ -249,14 +254,14 @@ public:
       if (elem != NULL) return elem->value;
     }
 
-    bool operator == (iterotor& rhs) const { 
+    bool operator == (const iterotor& rhs) const { 
       if (elem == rhs.elem) return true;
-      else false;
+      else return false;
     }
 
-    bool operator != (iterotor& rhs) const {
+    bool operator != (const iterotor& rhs) const {
       if (elem == rhs.elem) return false;
-      else true;
+      else return true;
     }
   };
 };
