@@ -358,12 +358,17 @@ public:
 	  }
   }
 
-  bool insert_sibling(iterotor it, int value) {							//not correct, will fix it later
-	  if (it.elem == NULL || it.elem->parent == NULL) return false;
-	  if (it.elem->parent->left != NULL && it.elem->parent->right != NULL) return false;
-	  it.elem = it.elem->parent;
-	  if (it.elem->parent->left == NULL) insert(it, 1, value);
-	  else insert(it, 0, value);
+  bool insert_sibling(iterotor it, int value) {
+    iterotor b(it.elem->parent);
+
+      if (it.elem == NULL || it.elem->parent == NULL) return false;
+      if (it.elem->parent->left != NULL && it.elem->parent->right != NULL) return false;
+      if (it.elem->left == NULL) {
+        insert(iterotor(it.elem->parent), 1, value);
+      }
+      else {
+        insert(iterotor(it.elem->parent), 0, value);
+      }
 	  return true;
   }
  
@@ -548,38 +553,44 @@ void test1() {
 
 }
 
+void test2() {
+  Binary_tree a;
+  a.add(5);
+  a.add(6);
+  a.add(9);
+  a.add(7);
+  a.add(8);
+  a.add(4);
+  a.add(2);
+  a.add(3);
+  a.add(1);
+  a.add(0);
+  a.print();
+
+  Binary_tree::iterotor it = a.begin();
+
+  it = it.get_left();
+  it.to_left();
+  it.to_right();
+
+  cout << "----------------------------" << endl;
+  //	a.remove_subtree(it);
+  a.insert(it, 0, 10);
+  a.print();
+
+  it.to_right();
+
+  cout << *it << endl;
+
+  a.insert_sibling(it, 11); //not correct, will fix it later
+  cout << "----------------------------" << endl;
+  a.print();
+}
 
 int main() {
 //  test();
 // test1();
-	Binary_tree a;
-	a.add(5);
-	a.add(6);
-	a.add(9);
-	a.add(7);
-	a.add(8);
-	a.add(4);
-	a.add(2);
-	a.add(3);
-	a.add(1);
-	a.add(0);
-	a.print();
-
-	Binary_tree::iterotor it = a.begin();
-
-	it = it.get_left();
-	it.to_left();
-	it.to_right();
-
-	cout << "----------------------------" << endl;
-//	a.remove_subtree(it);
-	a.insert(it, 1, 10);
-	a.print();
-
-	a.insert_sibling(it, 11); //not correct, will fix it later
-	cout << "----------------------------" << endl;
-	a.print();
-
+// test2();	
 
 	system("pause");
 }
