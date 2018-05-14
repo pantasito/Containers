@@ -302,7 +302,7 @@ public:
     iterator(tree_elem* _elem) : elem(_elem) {}
 
   public:
-    int operator*() const {
+    T operator*() const {
       if (elem != NULL) return elem->value_;
     }
 
