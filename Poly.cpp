@@ -18,7 +18,7 @@ list<Shape*>
 #include <iostream>
 #include <list>
 #include <ctime>
-#include <cstdlib>
+#include <iomanip>
 using namespace std;
 
 class Shape
@@ -57,7 +57,7 @@ class Circle : public Shape
     Circle(double r) :r(r) {}
     
     double area() {
-      return 3.14 * r * r;
+      return acos(-1) * r * r;
     }
 };
 
@@ -74,55 +74,35 @@ class Rectangle : public Shape
 };
 
 Shape* gen() {
-  int command;
-  command = rand() % 3;
+  int command = rand() % 3;
 
   if (command == 0) {
-    double r = 0;
-    while(r == 0) {
-      r = rand() % 10;
-    }
-
-    Circle* pc = new Circle(r);
-    return pc;
+    double r = (double)rand() / (double)RAND_MAX;    
+    return new Circle(r*9+1);
   }
 
   if (command == 1) {
 
     double a, b, c;
-    a = b = c = 0;
+    
+    a = ((double)rand() / (double)RAND_MAX) * 10 + 1 ;
+    b = ((double)rand() / (double)RAND_MAX) * 10 + 1;
+   
+    do
+    {
+      c = ((double)rand() / (double)RAND_MAX) * 10 + 1;
+    } while (a + b <= c || a + c <= b || b + c <= a);
+        
 
-    while (a == 0) {
-      a = rand() % 10;
-    }
-
-    while (b == 0) {
-      b = rand() % 10;
-    }
-
-    c = rand() % 10;
-
-    while (a + b <= c || a + c <= b || b + c <= a) {
-      c = rand() % 10;
-    }
-
-    Triangle* pt = new Triangle(a, b, c);
-    return pt;
+    return new Triangle(a, b, c);    
   }
 
   if (command == 2) {
     double a, b;
-    a = b = 0;
+    a = ((double)rand() / (double)RAND_MAX) * 10 + 1;
+    b = ((double)rand() / (double)RAND_MAX) * 10 + 1;
     
-    while (a == 0) {
-      a = rand() % 10;
-    }
-
-    while (b == 0) {
-      b = rand() % 10;
-    }
-    Rectangle* pr = new Rectangle(a, b);
-    return pr;
+    return new Rectangle(a, b);    
   }
 }
 
@@ -131,38 +111,33 @@ int main()
   int N;
   cout << "int N = ";
   cin >> N;
-
+  
   list <Shape*> l;
   srand(time(0));
 
-  Shape* p = gen();
-  l.push_back(p);
-  N--;
-  cout << p->area() << endl << "----------------------" << endl;
-  list <Shape*>::iterator it = l.begin();
+  l.push_back(gen());
+  cout << (*l.begin())->area() << endl << "----------------------" << endl;
+  
+  list <Shape*>::iterator it;
+  for (int i = 0; i < N-1; i++) {   
+      Shape* p = gen();
 
-
-  while (N > 0) {
-    N--;
-
-    Shape* p = gen();
-
-    for (it = l.begin(); it != l.end(); it++) {
-
-      if ((*it)->area() > p->area()) {
-        l.insert(it, p);
-        break;
+      for (it = l.begin(); it != l.end(); it++) {
+        if ((*it)->area() > p->area()) {
+          l.insert(it, p);
+          break;
+        }
       }
-    }
 
-    if (it == l.end()) {
-      l.push_back(p);
+      if (it == l.end()) {
+        l.push_back(p);
+      }
+    
+      for (auto p : l) {
+        cout << setw(5) << p->area() << " ";
     }
-
-    for (auto i : l) {
-      cout << i->area() << endl;
-    }
-    cout << "----------------------" << endl;
+    //cout << "----------------------" << endl;
+      cout << endl;
   }
   
   system("pause");
