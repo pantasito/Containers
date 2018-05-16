@@ -140,8 +140,11 @@ int main() {
   //test2();	
 
   Map<string, int> m;
-  m.set("dfdf", 3);
-  
+  m.set("a", 3);
+  m.set("a", 4);
+  //m.erase("a");
+//  m.begin();
+  //cout << m.find("a").second << endl;
   Binary_tree<string> tt;
   tt.add("HELLO");
   tt.add("HELLO1");

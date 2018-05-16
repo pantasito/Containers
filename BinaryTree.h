@@ -11,10 +11,7 @@
 using namespace std;
 
 template <typename T>
-class Binary_tree {
-  class iterator;
-  friend iterator;
-
+class Binary_tree {  
   struct tree_elem {
     tree_elem* parent;
     tree_elem* left;
@@ -59,7 +56,7 @@ class Binary_tree {
     tree_elem* tmp = root;
     while (tmp != NULL) {
       if (value == tmp->value_) return tmp;
-      if (value > tmp->value_) tmp = tmp->right;
+      if (value >= tmp->value_) tmp = tmp->right;
       else tmp = tmp->left;
     }
     return NULL;
@@ -84,6 +81,9 @@ class Binary_tree {
   }
 
 public:
+  class tree_iterator;
+  friend tree_iterator;
+
   Binary_tree() {
     root = NULL;
     size_ = 0;
@@ -217,15 +217,20 @@ public:
     }
   }
 
-  bool is_in(T value) {
+  bool is_in(T value, tree_iterator* it = NULL) {
     tree_elem* tmp = root;
     while (tmp != NULL) {
-      if (value == tmp->value_) return true;
+      if (value == tmp->value_) {
+        if (it != NULL) it->elem = tmp;
+        return true;
+      }
       if (value > tmp->value_) tmp = tmp->right;
       else tmp = tmp->left;
     }
     return false;
   }
+
+
 
   int count(T value) {
     return count(root, value);
@@ -253,11 +258,11 @@ public:
     else return false;
   }
 
-  iterator begin() {
-    return iterator(root);
+  tree_iterator begin() {
+    return tree_iterator(root);
   }
 
-  void insert(iterator it, bool left, int value) {
+  void insert(tree_iterator it, bool left, int value) {
     if (it.elem == NULL) return;
 
     if (left && it.elem->left == NULL) {
@@ -270,7 +275,7 @@ public:
     }
   }
 
-  bool insert_sibling(iterator it, int value) {
+  bool insert_sibling(tree_iterator it, int value) {
     if (it.elem == NULL || it.elem->parent == NULL) return false;
     if (it.elem->parent->left != NULL && it.elem->parent->right != NULL) return false;
     if (it.elem->parent->left == NULL) {
@@ -284,7 +289,7 @@ public:
   }
 
   // Для просто бинарного дерева
-  void remove_subtree(iterator it) {
+  void remove_subtree(tree_iterator it) {
     if (it.elem == NULL) return;
     if (it.elem->parent == NULL) { clear(); return; }
     if (it.elem->parent->left == it.elem) it.elem->parent->left = NULL;
@@ -293,36 +298,40 @@ public:
     clear(it.elem);
   }
 
-  class iterator
+  class tree_iterator
   {
     friend Binary_tree;
 
     tree_elem* elem;
 
-    iterator(tree_elem* _elem) : elem(_elem) {}
+    tree_iterator(tree_elem* _elem) : elem(_elem) {}
 
   public:
     T operator*() const {
       if (elem != NULL) return elem->value_;
     }
 
-    bool operator==(const iterator& rhs) const { return elem == rhs.elem; }
-    bool operator!=(const iterator& rhs) const { return elem != rhs.elem; }
+    void set_value(T val) {
+      elem->value_ = val;
+    }
 
-    iterator get_left()    const {
-      iterator it(elem);
+    bool operator==(const tree_iterator& rhs) const { return elem == rhs.elem; }
+    bool operator!=(const tree_iterator& rhs) const { return elem != rhs.elem; }
+
+    tree_iterator get_left()    const {
+      tree_iterator it(elem);
       if (elem != NULL && elem->left != NULL) it.elem = elem->left;
       return it;
     }
 
-    iterator get_right()   const {
-      iterator it(elem);
+    tree_iterator get_right()   const {
+      tree_iterator it(elem);
       if (elem != NULL && elem->right != NULL) it.elem = elem->right;
       return it;
     }
 
-    iterator get_sibling()  const {
-      iterator it(elem);
+    tree_iterator get_sibling()  const {
+      tree_iterator it(elem);
       if (elem == NULL) return it;
       if (elem->parent == NULL) return it;
       if (elem->parent->left == NULL || elem->parent->right == NULL) return it;
@@ -331,8 +340,8 @@ public:
       return it;
     }
 
-    iterator get_parent() const {
-      iterator it(elem);
+    tree_iterator get_parent() const {
+      tree_iterator it(elem);
       if (elem != NULL && elem->parent != NULL) it.elem = elem->parent;
       return it;
     }
