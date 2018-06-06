@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <cassert>
 using namespace std;
 
 /*
@@ -46,109 +47,139 @@ struct Position
   int x;
   int y;
   Position(int x, int y):x(x),y(y) {}
-  int get_x() { return x; }
-  int get_y() { return y; }
 
-public:
-  void set_x(int _x) { x = _x; }
-  void set_y(int _y) { y = _y; }
-  bool operator == (Position& lhs, Position& rhs) {
-    if (lhs.get_x() == rhs.get_x() && lhs.get_y() = rhs.get_x()) return true;
+//  int get_x() { return x; }
+//  int get_y() { return y; }
+
+//public:
+//  void set_x(int _x) { x = _x; }
+//  void set_y(int _y) { y = _y; }
+
+  bool operator == (Position& rhs) {
+    if (x == rhs.x && y == rhs.y) return true;
     else return false;
   }
 };
 
+
 class ChessParty;
 
 class Figure
-{   
+{
+public:
     friend ChessParty;
     Position pos;
     bool is_white;
-  public:
-    Figure(Position pos, bool is_white) :pos(pos), is_white(is_white) {}
+    Figure(Position _pos, bool _is_white) :pos(_pos), is_white(_is_white) {}
     virtual void print() = 0;
     virtual vector<Position> get_avail_turns(ChessParty& party) = 0;
 };
 
+class Pawn : public Figure
+{
+public:
+  Pawn(Position _pos, bool _is_white) : Figure(_pos, _is_white) {
+    pos = _pos;
+    is_white = _is_white;
+  }
+
+  void print() { cout << "p "; }
+
+  vector<Position> get_avail_turns(ChessParty& party) { 
+    vector<Position> p;
+    if (pos.y < 7) {
+      p.push_back(Position(pos.x, pos.y+1));
+    }
+    return p;
+  }
+};
 
 class ChessParty
 {
   friend Figure;
-  bool cur_white = true;
+  bool cur_white;
 
   vector<Figure*> white_figures;
   vector<Figure*> black_figures;
   
   Figure* field[8][8];
 
-  Figure* get_fig() {
+  Figure* get_figure() {
     int size = (cur_white == 1) ? white_figures.size() : black_figures.size();
-    if (size == 0) return;
-    Figure * p = (cur_white == 1) ? white_figures[rand() % size] : black_figures[rand() % size];
-    return p;
+    if (size == 0) return NULL;
+    return (cur_white == 1) ? white_figures[rand() % size] : black_figures[rand() % size];
   }
 
   void check_and_delete_fig(bool cur_white, Position this_turn) {
-    if (cur_white == 1) {
-      for (vector<Figure*> ::iterator it = black_figures.begin(); it != black_figures.end(); it++) {
-        if (*it.pos == this_turn) {
-          black_figures.erase(it);
-          field[this_turn.get_x()][this_turn.get_y()] = NULL;
-        }
-      }
-    }
-    else 
-      for (vector<Figure*> ::iterator it = white_figures.begin(); it != white_figures.end(); it++) {
-      if (*it.pos == this_turn) {
-        white_figures.erase(it);
-        field[this_turn.get_x()][this_turn.get_y()] = NULL;
+    if (field[this_turn.x][this_turn.y] == NULL) return;
+    if (field[this_turn.x][this_turn.y]->is_white == cur_white) assert(0);
+
+    vector<Figure*>& enemy_figures = cur_white ? white_figures : black_figures;
+    for (vector<Figure*> ::iterator it = enemy_figures.begin(); it != enemy_figures.end(); it++) {
+      if ((*it)->pos == this_turn) {
+        enemy_figures.erase(it);
+        field[this_turn.x][this_turn.y] = NULL;
       }
     }
   }
 
   public:
-    ChessParty() {}
-    void turn() {
-      /*
-      Метод turn:
-      Осуществляет один ход, псевдокод:
-          1) Фиксируется сторона, которая ходит
-          2) Выбирается рандомная фигура
-          3) Получаем массив всех возможных ходов для этой фигуры
-          4) Если массив пуст, goto 2
-          5) Из допустимых мест хода выбирается рандомное место, куда пойдет фигура
-          6) Если в этом месте уже есть фигура, то goto 7, иначе goto 8
-              7) Удаляем съеденную фигуру с поля и из массива фигур.
-          8) Ставим на это место текущую фигуру
-          9) Очищаем предыдущее место текущей фигуры
-          10) Меняется сторона, которая ходит
-       */
+    ChessParty() {
+      {
+        cur_white = true;
 
-      vector<Position> avail_pos;
-      srand(time(0));
-      Figure* figure = get_fig();
-      do {
-        vector<Position> avail_pos = figure->get_avail_turns(*this);
-      } while (avail_pos.size() == 0);
+        for (int i = 0; i < 8; i++)
+          for (int j = 0; j < 8; j++)
+          {
+            field[i][j] = NULL;
 
-      Position this_turn = avail_pos[rand() % avail_pos.size()];
-
-      check_and_delete_fig(cur_white, this_turn);
-      field[figure->pos.get_x()][figure->pos.get_y()] = NULL;
-
-      figure->pos.set_x(this_turn.get_x());
-      figure->pos.set_y(this_turn.get_y());
-      cur_white = 1 - cur_white;
-    }
-
-    void print() {
-      for (auto i : field) {
-        for (auto j : field) {
-          if (*j == NULL) cout << ". ";
-          else cout << ". ";
-        }
-        cout << endl;
+            if (j == 1) {
+              field[i][j] = new Pawn(Position(i, j), true);
+              white_figures.push_back(field[i][j]);
+            }
+            if (j == 6) field[i][j] = new Pawn(Position(i, j), false);
+          }
       }
     }
+    void turn() {
+   
+    vector<Position> avail_pos;
+    srand(time(0));
+    Figure* figure;
+    do {
+      figure = get_figure();
+      avail_pos = figure->get_avail_turns(*this);
+    } while (avail_pos.size() == 0);
+
+    Position this_turn = avail_pos[rand() % avail_pos.size()];
+
+    check_and_delete_fig(cur_white, this_turn);
+    field[figure->pos.x][figure->pos.y] = NULL;
+
+    figure->pos.x = this_turn.x;
+    figure->pos.y = this_turn.y;
+    cur_white = 1 - cur_white;
+  }
+
+  void print() {
+    for (int i = 0; i < 8; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        if (field[i][j] == NULL) cout << ". ";
+        else field[i][j]->print();
+      }
+      cout << endl;
+    }
+    cout << endl;
+  }
 };
+
+int main()
+{
+  ChessParty party;
+
+  for (int i = 0; i < 30; i++)
+  {
+    party.print();
+    party.turn();
+  }
+}
