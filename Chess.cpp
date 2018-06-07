@@ -75,7 +75,8 @@ public:
     virtual vector<Position> get_avail_turns(ChessParty& party) = 0;
 };
 
-class Pawn : public Figure
+/*
+class Rook : public Figure
 {
 public:
   Pawn(Position _pos, bool _is_white) : Figure(_pos, _is_white) {
@@ -85,14 +86,22 @@ public:
 
   void print() { cout << "p "; }
 
-  vector<Position> get_avail_turns(ChessParty& party) { 
+  vector<Position> get_avail_turns(ChessParty& party) {
     vector<Position> p;
-    if (pos.y < 7) {
-      p.push_back(Position(pos.x, pos.y+1));
+    if (is_white == true && pos.y < 7) {
+      if (party.field[pos.x][pos.y + 1] == NULL) p.push_back(Position(pos.x, pos.y + 1));
+      if (pos.x != 0 && party.field[pos.x - 1][pos.y + 1] != NULL) p.push_back(Position(pos.x - 1, pos.y + 1));
+      if (pos.x != 7 && party.field[pos.x + 1][pos.y + 1] != NULL) p.push_back(Position(pos.x + 1, pos.y + 1));
+    }
+    if (is_white == false && pos.y > 0) {
+      if (party.field[pos.x][pos.y - 1] == NULL) p.push_back(Position(pos.x, pos.y - 1));
+      if (pos.x != 0 && party.field[pos.x - 1][pos.y - 1] != NULL) p.push_back(Position(pos.x - 1, pos.y - 1));
+      if (pos.x != 7 && party.field[pos.x + 1][pos.y - 1] != NULL) p.push_back(Position(pos.x + 1, pos.y - 1));
     }
     return p;
   }
 };
+*/
 
 class ChessParty
 {
@@ -114,14 +123,42 @@ class ChessParty
     if (field[this_turn.x][this_turn.y] == NULL) return;
     if (field[this_turn.x][this_turn.y]->is_white == cur_white) assert(0);
 
-    vector<Figure*>& enemy_figures = cur_white ? white_figures : black_figures;
+    vector<Figure*>& enemy_figures = cur_white ? black_figures : white_figures;
     for (vector<Figure*> ::iterator it = enemy_figures.begin(); it != enemy_figures.end(); it++) {
       if ((*it)->pos == this_turn) {
         enemy_figures.erase(it);
+        cout << enemy_figures.size() << endl;
         field[this_turn.x][this_turn.y] = NULL;
       }
     }
   }
+
+  class Pawn : public Figure
+  {
+  public:
+    Pawn(Position _pos, bool _is_white) : Figure(_pos, _is_white) {
+      pos = _pos;
+      is_white = _is_white;
+    }
+
+    void print() { cout << "p "; }
+
+    vector<Position> get_avail_turns(ChessParty& party) {
+      vector<Position> p;
+      if (is_white == true && pos.y < 7) {
+        if (party.field[pos.x][pos.y + 1] == NULL) p.push_back(Position(pos.x, pos.y + 1));
+        if (pos.x != 0 && party.field[pos.x - 1][pos.y + 1] != NULL && party.field[pos.x][pos.y]->is_white != party.field[pos.x - 1][pos.y + 1]->is_white) p.push_back(Position(pos.x - 1, pos.y + 1));
+        if (pos.x != 7 && party.field[pos.x + 1][pos.y + 1] != NULL && party.field[pos.x][pos.y]->is_white != party.field[pos.x + 1][pos.y + 1]->is_white) p.push_back(Position(pos.x + 1, pos.y + 1));
+      }
+      if (is_white == false && pos.y > 0) {
+        if (party.field[pos.x][pos.y - 1] == NULL) p.push_back(Position(pos.x, pos.y - 1));
+        if (pos.x != 0 && party.field[pos.x - 1][pos.y - 1] != NULL && party.field[pos.x][pos.y]->is_white != party.field[pos.x - 1][pos.y - 1]->is_white) p.push_back(Position(pos.x - 1, pos.y - 1));
+        if (pos.x != 7 && party.field[pos.x + 1][pos.y - 1] != NULL && party.field[pos.x][pos.y]->is_white != party.field[pos.x + 1][pos.y - 1]->is_white) p.push_back(Position(pos.x + 1, pos.y - 1));
+      }
+      return p;
+    }
+  };
+
 
   public:
     ChessParty() {
@@ -137,8 +174,11 @@ class ChessParty
               field[i][j] = new Pawn(Position(i, j), true);
               white_figures.push_back(field[i][j]);
             }
-            if (j == 6) field[i][j] = new Pawn(Position(i, j), false);
-          }
+            if (j == 6) {
+              field[i][j] = new Pawn(Position(i, j), false);
+              black_figures.push_back(field[i][j]);
+            }
+         }
       }
     }
     void turn() {
@@ -158,6 +198,7 @@ class ChessParty
 
     figure->pos.x = this_turn.x;
     figure->pos.y = this_turn.y;
+    field[this_turn.x][this_turn.y] = figure;
     cur_white = 1 - cur_white;
   }
 
@@ -177,9 +218,11 @@ int main()
 {
   ChessParty party;
 
-  for (int i = 0; i < 30; i++)
+  for (int i = 0; i < 300; i++)
   {
     party.print();
     party.turn();
   }
+
+  system("pause");
 }
