@@ -77,13 +77,13 @@ class ChessParty
 
   vector<Figure*> white_figures;
   vector<Figure*> black_figures;
-  
+
   Figure* field[8][8];
 
   Figure* get_figure() {
-    int size = (cur_white == 1) ? white_figures.size() : black_figures.size();
+    int size = (cur_white) ? white_figures.size() : black_figures.size();
     if (size == 0) return NULL;
-    return (cur_white == 1) ? white_figures[rand() % size] : black_figures[rand() % size];
+    return (cur_white) ? white_figures[rand() % size] : black_figures[rand() % size];
   }
 
   void check_and_delete_fig(bool cur_white, Position this_turn) {
@@ -99,6 +99,19 @@ class ChessParty
       }
     }
   }
+  /*
+  bool shah_check(bool cur_white, Position desired_pos, class ChessParty* a) {
+    vector<Figure*>& enemy_figures = cur_white ? black_figures : white_figures;
+    for (vector<Figure*> ::iterator it = enemy_figures.begin(); it != enemy_figures.end(); it++) {
+      vector<Position> p = (*it)->get_avail_turns(*this);
+      for (auto pos : p) {
+        if (pos == desired_pos) {
+          return true;
+        }
+      }
+    }
+  }
+  */
 
   class Pawn : public Figure
   {
@@ -139,48 +152,76 @@ class ChessParty
   }
 
   vector<Position> get_avail_turns(ChessParty& party) {
-  vector<Position> p;
+    vector<Position> p;
+
+    int x_i[4] = { 1, -1, 0,  0 };
+    int y_i[4] = { 0,  0, 1, -1 };
+
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 1; j < 8; ++j) {
+        int px = pos.x + j * x_i[i];
+        int py = pos.y + j * y_i[i];
+        if (px < 0 || px > 7 || py < 0 || py > 7) continue;
+        if (party.field[px][py] == NULL) { p.push_back(Position(px, py)); }
+        if (party.field[px][py] != NULL) {
+          if (party.field[px][py]->is_white != is_white) { p.push_back(Position(px, py)); }
+          break;
+        }
+      }
+    }
+    return p;
+  }
+
+  /*
+  vector<Position> get_avail_turns(ChessParty& party) {
+    vector<Position> p;
 
     for (int i = 1; (pos.x - i) >= 0; ++i) {
       if (party.field[pos.x - i][pos.y] == NULL) p.push_back(Position(pos.x - i, pos.y));
-      if (party.field[pos.x - i][pos.y] != NULL && party.field[pos.x - i][pos.y]->is_white != is_white) {
-        p.push_back(Position(pos.x - i, pos.y));
+      if (party.field[pos.x - i][pos.y] != NULL) {
+        if (party.field[pos.x - i][pos.y]->is_white != is_white) {
+          p.push_back(Position(pos.x - i, pos.y));
+        }
         break;
       }
-      if (party.field[pos.x - i][pos.y] != NULL && party.field[pos.x - i][pos.y]->is_white == is_white) break;
     }
 
     for (int i = 1; (pos.x + i) <= 7; ++i) {
       if (party.field[pos.x + i][pos.y] == NULL) p.push_back(Position(pos.x + i, pos.y));
-      if (party.field[pos.x + i][pos.y] != NULL && party.field[pos.x + i][pos.y]->is_white != is_white) {
-        p.push_back(Position(pos.x + i, pos.y));
+      if (party.field[pos.x + i][pos.y] != NULL) {
+        if (party.field[pos.x + i][pos.y]->is_white != is_white) {
+          p.push_back(Position(pos.x + i, pos.y));
+        }
         break;
       }
-      if (party.field[pos.x + i][pos.y] != NULL && party.field[pos.x + i][pos.y]->is_white == is_white) break;
     }
-  
+
     for (int i = 1; (pos.y - i) >= 0; ++i) {
       if (party.field[pos.x][pos.y - i] == NULL) p.push_back(Position(pos.x, pos.y - i));
-      if (party.field[pos.x][pos.y - i] != NULL && party.field[pos.x][pos.y - i]->is_white != is_white) {
-        p.push_back(Position(pos.x, pos.y - i));
+      if (party.field[pos.x][pos.y - i] != NULL) {
+        if (party.field[pos.x][pos.y - i]->is_white != is_white) {
+          p.push_back(Position(pos.x, pos.y - i));
+        }
         break;
       }
-      if (party.field[pos.x][pos.y - i] != NULL && party.field[pos.x][pos.y - i]->is_white == is_white) break;
     }
 
     for (int i = 1; (pos.y + i) <= 7; ++i) {
       if (party.field[pos.x][pos.y + i] == NULL) p.push_back(Position(pos.x, pos.y + i));
-      if (party.field[pos.x][pos.y + i] != NULL && party.field[pos.x][pos.y + i]->is_white != is_white) {
-        p.push_back(Position(pos.x, pos.y + i));
+      if (party.field[pos.x][pos.y + i] != NULL) {
+        if (party.field[pos.x][pos.y + i]->is_white != is_white) {
+          p.push_back(Position(pos.x, pos.y + i));
+        }
         break;
       }
-      if (party.field[pos.x][pos.y + i] != NULL && party.field[pos.x][pos.y + i]->is_white == is_white) break;
     }
-  return p;
-  }
+
+    return p;
+    }
+    */
   };
 
-  class Bishop : public Figure
+  class Bishop : public Figure 
   {
   public:
     Bishop(Position _pos, bool _is_white) : Figure(_pos, _is_white) {}
@@ -194,25 +235,71 @@ class ChessParty
     vector<Position> get_avail_turns(ChessParty& party) {
       vector<Position> p;
 
+      int x_i[4] = { 1,  1, -1, -1 };
+      int y_i[4] = { 1, -1,  1, -1 };
+
+      for (int i = 0; i < 4; ++i) {
+        for (int j = 1; j < 8; ++j) {
+          int px = pos.x + j * x_i[i];
+          int py = pos.y + j * y_i[i];
+          if (px < 0 || px > 7 || py < 0 || py > 7) continue;
+          if (party.field[px][py] == NULL) { p.push_back(Position(px, py)); }
+          if (party.field[px][py] != NULL) {
+            if (party.field[px][py]->is_white != is_white) { p.push_back(Position(px, py)); }
+            break;
+          }
+        }
+      }
+      return p;
+    }
+
+    /*
+    vector<Position> get_avail_turns(ChessParty& party) {
+      vector<Position> p;
+
       for (int i = 1; (pos.x - i) >= 0 && (pos.y - i) >= 0; ++i) {
         if (party.field[pos.x - i][pos.y - i] == NULL) p.push_back(Position(pos.x - i, pos.y - i));
-        if (party.field[pos.x - i][pos.y - i] != NULL && party.field[pos.x - i][pos.y - i]->is_white != is_white) {
-          p.push_back(Position(pos.x - i, pos.y - i));
+        if (party.field[pos.x - i][pos.y - i] != NULL) {
+          if (party.field[pos.x - i][pos.y - i]->is_white != is_white) {
+            p.push_back(Position(pos.x - i, pos.y - i));
+          }
           break;
         }
-        if (party.field[pos.x - i][pos.y - i] != NULL && party.field[pos.x - i][pos.y - i]->is_white == is_white) break;
+      }
+
+      for (int i = 1; (pos.x + i) <= 7 && (pos.y - i) >= 0; ++i) {
+        if (party.field[pos.x + i][pos.y - i] == NULL) p.push_back(Position(pos.x + i, pos.y - i));
+        if (party.field[pos.x + i][pos.y - i] != NULL) {
+          if (party.field[pos.x + i][pos.y - i]->is_white != is_white) {
+            p.push_back(Position(pos.x + i, pos.y - i));
+          }
+          break;
+        }
+      }
+
+      for (int i = 1; (pos.x - i) >= 0 && (pos.y + i) <= 7; ++i) {
+        if (party.field[pos.x - i][pos.y + i] == NULL) p.push_back(Position(pos.x - i, pos.y + i));
+        if (party.field[pos.x - i][pos.y + i] != NULL) {
+          if (party.field[pos.x - i][pos.y + i]->is_white != is_white) {   //тут ошибка
+            p.push_back(Position(pos.x - i, pos.y + i));
+          }
+          break;
+        }
       }
 
       for (int i = 1; (pos.x + i) <= 7 && (pos.y + i) <= 7; ++i) {
         if (party.field[pos.x + i][pos.y + i] == NULL) p.push_back(Position(pos.x + i, pos.y + i));
-        if (party.field[pos.x + i][pos.y + i] != NULL && party.field[pos.x + i][pos.y + i]->is_white != is_white) {
-          p.push_back(Position(pos.x + i, pos.y + i));
+        if (party.field[pos.x + i][pos.y + i] != NULL) {
+          if (party.field[pos.x + i][pos.y + i]->is_white != is_white) {
+            p.push_back(Position(pos.x + i, pos.y + i));
+          }
           break;
         }
-        if (party.field[pos.x + i][pos.y + i] != NULL && party.field[pos.x + i][pos.y + i]->is_white == is_white) break;
       }
+      
       return p;
     }
+    */
   };
 
   class Knight : public Figure
@@ -228,8 +315,25 @@ class ChessParty
 
     vector<Position> get_avail_turns(ChessParty& party) {
       vector<Position> p;
-      
-      if (party.field[pos.x - 2][pos.y + 1] == NULL && pos.x - 2 >= 0 && pos.y + 1 <= 7) p.push_back(Position(pos.x - 2, pos.y + 1));
+    
+      int i_x[8] = { 1,  1, -1, -1,  2,  2, -2, -2 };
+      int i_y[8] = { 2, -2,  2, -2,  1, -1,  1, -1 };
+
+      for (int i = 0; i < 8; i++) {
+        int px = pos.x + i_x[i];
+        int py = pos.y + i_y[i];
+        if (px < 0 || px > 7 || py < 0 || py > 7) continue;
+        if (party.field[px][py] == NULL) p.push_back(Position(px, py));
+        if (party.field[px][py] != NULL && party.field[px][py]->is_white != is_white) p.push_back(Position(px, py));
+      }
+      return p;
+    }
+    
+    /*
+    vector<Position> get_avail_turns(ChessParty& party) {
+      vector<Position> p;
+
+      if (pos.x - 2 >= 0 && pos.y + 1 <= 7 && party.field[pos.x - 2][pos.y + 1] == NULL) p.push_back(Position(pos.x - 2, pos.y + 1));
       if (party.field[pos.x - 2][pos.y + 1] != NULL && pos.x - 2 >= 0 && pos.y + 1 <= 7 && party.field[pos.x - 2][pos.y + 1]->is_white != is_white) p.push_back(Position(pos.x - 2, pos.y + 1));
 
       if (party.field[pos.x + 2][pos.y + 1] == NULL && pos.x + 2 <= 7 && pos.y + 1 <= 7) p.push_back(Position(pos.x + 2, pos.y + 1));
@@ -242,6 +346,7 @@ class ChessParty
       if (party.field[pos.x + 2][pos.y - 1] != NULL && pos.x + 2 <= 7 && pos.y - 1 >= 0 && party.field[pos.x + 2][pos.y - 1]->is_white != is_white) p.push_back(Position(pos.x + 2, pos.y - 1));
       return p;
     }
+   */ 
   };
 
   class Queen : public Figure
@@ -255,6 +360,27 @@ class ChessParty
       cout << "q "; ColorOutput::ResetColor();
     }
 
+    vector<Position> get_avail_turns(ChessParty& party) {
+      vector<Position> p;
+
+      int x_i[8] = { 1,  1, -1, -1, 1, -1,  0,  0 };
+      int y_i[8] = { 1, -1,  1, -1, 0,  0,  1, -1 };
+
+      for (int i = 0; i < 8; ++i) {
+        for (int j = 1; j < 8; ++j) {
+          int px = pos.x + j * x_i[i];
+          int py = pos.y + j * y_i[i];
+          if (px < 0 || px > 7 || py < 0 || py > 7) continue;
+          if (party.field[px][py] == NULL) { p.push_back(Position(px, py)); }
+          if (party.field[px][py] != NULL) {
+            if (party.field[px][py]->is_white != is_white) { p.push_back(Position(px, py)); }
+            break;
+          }
+        }
+      }
+      return p;
+    }
+    /*
     vector<Position> get_avail_turns(ChessParty& party) {
       vector<Position> p;
 
@@ -311,10 +437,18 @@ class ChessParty
       }
       return p;
     }
+    */
   };
 
   class King : public Figure
   {
+    // ороль должен будет запускать функцию сканер опасности от других фигур. 
+    //написать эту функцию в партии.
+    
+    //после каждого хода в методе turn провер€ть есть ли шах, если есть вывести месседж, что вот шах! 
+    //после этого нужно передвинут корол€
+    //если нет ходов, то играла закончилась
+
   public:
     King(Position _pos, bool _is_white) : Figure(_pos, _is_white) {}
 
@@ -324,6 +458,28 @@ class ChessParty
       cout << "1 "; ColorOutput::ResetColor();
     }
 
+    vector<Position> get_avail_turns(ChessParty& party) {
+      vector<Position> p;
+
+      int x_i[8] = { 1,  1, -1, -1, 1, -1,  0,  0 };
+      int y_i[8] = { 1, -1,  1, -1, 0,  0,  1, -1 };
+
+      for (int i = 0; i < 8; ++i) {
+        int px = pos.x + x_i[i];
+        int py = pos.y + y_i[i];
+        if (px < 0 || px > 7 || py < 0 || py > 7) continue;
+        if (party.field[px][py] == NULL) { 
+     //     if (!shah_check(is_white, Position(px, py)), *this) p.push_back(Position(px, py));
+        }
+        if (party.field[px][py] != NULL) {
+          if (party.field[px][py]->is_white != is_white) { p.push_back(Position(px, py)); }
+          break;
+        }
+      }
+      return p;
+    }
+
+    /*
     vector<Position> get_avail_turns(ChessParty& party) {
       vector<Position> p;
 
@@ -340,6 +496,7 @@ class ChessParty
 
       return p;
     }
+    */
   };
 
   public:
@@ -419,6 +576,18 @@ class ChessParty
     figure->pos.x = this_turn.x;
     figure->pos.y = this_turn.y;
     field[this_turn.x][this_turn.y] = figure;
+
+    /* проверка есть ли шах
+    vector<Position> is_now_shah = figure->get_avail_turns(*this);
+    
+    for (auto pos : is_now_shah) {
+      if (pos == King.pos) {
+        cout << endl << "SHAH!" << endl;
+      }
+    }
+    */
+
+
     cur_white = !cur_white;
   }
 
@@ -438,10 +607,9 @@ int main()
 {
   srand(time(0));
   ChessParty party;
-
-//  for (int i = 0; i < 1000; i++)
-  while(true)
-  {
+  while (true){
+//  for (int i = 0; i < 100; i++) {
+ 
     party.print();
     party.turn();
   }
